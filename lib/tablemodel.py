@@ -25,7 +25,7 @@ class DatabaseModel:
     def validate_login(self, student_number, password):
         cursor = sqlite3.connect(self.database_file).cursor()
         if(len(student_number)==7):
-            cursor.execute(f"SELECT * FROM student WHERE student_number = '{student_number}'")
+            cursor.execute(f"SELECT * FROM student WHERE student_number = ?," (student_number))
             account = cursor.fetchone()
             cursor.close()
             if account == None or not pbkdf2_sha256.verify(password, account[4]):
@@ -122,7 +122,7 @@ class DatabaseModel:
         cursor = db.cursor()
         hashed_password = pbkdf2_sha256.hash(password)
         print(hashed_password)
-        cursor.execute(f"INSERT INTO teacher (first_name, last_name, password, isAdmin) VALUES ('{first_name}', '{last_name}', '{hashed_password}', '{isAdmin}')")
+        cursor.execute(f"INSERT INTO teacher (first_name, last_name, password, isAdmin) VALUES (?,?,?,?)", (first_name, last_name, hashed_password, isAdmin))
         db.commit()
         db.close()
 
@@ -183,7 +183,7 @@ class DatabaseModel:
     
     def get_student_in_meeting(self, meeting_id):
         cursor = sqlite3.connect(self.database_file).cursor()
-        cursor.execute(f"SELECT student.* FROM student JOIN meeting_assignment ON student.id = meeting_assignment.student_id WHERE meeting_assignment.meeting_id = '{meeting_id}';")
+        cursor.execute(f"SELECT student.* FROM student JOIN meeting_assignment ON student.id = meeting_assignment.student_id WHERE meeting_assignment.meeting_id = ?,"(meeting_id))
         data = cursor.fetchall()
         return data
     
@@ -217,7 +217,7 @@ class DatabaseModel:
     # Gets all content from a table.
     def get_content(self, table_name):
         cursor = sqlite3.connect(self.database_file).cursor()
-        cursor.execute(f"SELECT * FROM {table_name}")
+        cursor.execute("SELECT * FROM ?", (table_name))
         data = cursor.fetchall()
         columns = [column_name[0] for column_name in cursor.description]
         return data, columns
@@ -239,7 +239,7 @@ class DatabaseModel:
     def get_course_by_name(self, name):
         print(name)
         cursor = sqlite3.connect(self.database_file).cursor()
-        cursor.execute(f"SELECT * FROM courses WHERE course_name = '{name}'")
+        cursor.execute("SELECT * FROM courses WHERE course_name = ?", (name))
         id = cursor.fetchone()
         print(id)
         return id
